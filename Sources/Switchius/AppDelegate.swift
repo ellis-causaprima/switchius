@@ -1,10 +1,10 @@
 import AppKit
-import ChromeSwitchCore
+import SwitchiusCore
 import os
 
 /// Owns the status item and reacts to the two things that happen: a profile gets picked, or a link arrives.
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
-    private let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "ChromeSwitch", category: "app")
+    private let log = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Switchius", category: "app")
     private let store = ActiveProfileStore()
     private let menu = NSMenu()
     private var statusItem: NSStatusItem!
@@ -19,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem.menu = menu
         reloadProfiles()
         refreshStatusItem()
+        offerDefaultBrowserOnFirstLaunch()
     }
 
     /// Called by macOS for every link (and HTML file) we are the default handler for.
@@ -47,9 +48,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func refreshStatusItem() {
         guard let button = statusItem.button else { return }
         if let active = store.resolveActive(from: profiles) {
+            let fullTitle = ProfileLabels.menuTitles(for: profiles)[active.directory] ?? active.name
             button.image = Avatars.image(for: active, diameter: 18)
-            button.title = " " + ProfileLabels.barTitle(for: active, in: profiles)
-            button.toolTip = "Links open in Chrome profile “\(ProfileLabels.menuTitles(for: profiles)[active.directory] ?? active.name)”"
+            button.title = Preferences.showNameInMenuBar ? " " + ProfileLabels.barTitle(for: active, in: profiles) : ""
+            button.toolTip = "Links open in Chrome profile “\(fullTitle)”"
         } else {
             button.image = NSImage(systemSymbolName: "questionmark.circle", accessibilityDescription: "No Chrome profiles")
             button.title = ""
@@ -85,26 +87,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if !DefaultBrowser.runsFromBundle {
             menu.addItem(disabledItem("Run the .app bundle to use as default browser"))
         } else if DefaultBrowser.isCurrent {
-            menu.addItem(disabledItem("ChromeSwitch is your default browser"))
+            menu.addItem(disabledItem("Switchius is your default browser"))
         } else {
-            let item = NSMenuItem(title: "Use ChromeSwitch as Default Browser…", action: #selector(makeDefaultBrowser), keyEquivalent: "")
-            item.target = self
-            menu.addItem(item)
+            menu.addItem(actionItem("Use Switchius as Default Browser…", #selector(makeDefaultBrowser)))
         }
 
-        let login = NSMenuItem(title: "Launch at Login", action: #selector(toggleLoginItem), keyEquivalent: "")
-        login.target = self
+        let showName = actionItem("Show Name in Menu Bar", #selector(toggleShowName))
+        showName.state = Preferences.showNameInMenuBar ? .on : .off
+        menu.addItem(showName)
+
+        let login = actionItem("Launch at Login", #selector(toggleLoginItem))
         login.state = LoginItem.isEnabled ? .on : .off
         menu.addItem(login)
 
         menu.addItem(.separator())
-        let quit = NSMenuItem(title: "Quit ChromeSwitch", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-        menu.addItem(quit)
+        menu.addItem(NSMenuItem(title: "Quit Switchius", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
     }
 
     private func disabledItem(_ title: String) -> NSMenuItem {
         // With autoenablesItems on, an item without an action stays disabled.
         NSMenuItem(title: title, action: nil, keyEquivalent: "")
+    }
+
+    private func actionItem(_ title: String, _ action: Selector) -> NSMenuItem {
+        let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
+        item.target = self
+        return item
     }
 
     // MARK: Actions
@@ -114,6 +122,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         store.activeDirectory = directory
         log.info("Active profile set to \(directory, privacy: .public)")
         refreshStatusItem()
+    }
+
+    @objc private func toggleShowName() {
+        Preferences.showNameInMenuBar.toggle()
+        refreshStatusItem()
+    }
+
+    /// On the very first launch from a bundle, ask macOS straight away. The user can decline; we don't ask again.
+    private func offerDefaultBrowserOnFirstLaunch() {
+        guard DefaultBrowser.runsFromBundle, !DefaultBrowser.isCurrent, !Preferences.didOfferDefaultBrowser else { return }
+        Preferences.didOfferDefaultBrowser = true
+        makeDefaultBrowser()
     }
 
     @objc private func makeDefaultBrowser() {

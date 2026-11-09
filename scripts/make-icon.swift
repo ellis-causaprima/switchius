@@ -1,4 +1,4 @@
-// Draws the ChromeSwitch app icon as an .iconset folder (run via `make icon`).
+// Draws the Switchius app icon as an .iconset folder (run via `make icon`).
 // A rounded square with a toggle switch: the whole point of the app in one glyph.
 import AppKit
 

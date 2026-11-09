@@ -1,22 +1,23 @@
-# ChromeSwitch
+# Switchius
 
 A tiny macOS menu bar app that decides **which Chrome profile external links open in**.
 
 Chrome opens links from other apps (Slack, Mail, calendar invites, …) in whichever profile you
 used last. If you juggle a work and a personal profile, that means Ashby, Google Meet and friends
-keep landing in the wrong one. ChromeSwitch fixes that with a menu bar toggle: pick a profile, and
+keep landing in the wrong one. Switchius fixes that with a menu bar toggle: pick a profile, and
 every link goes there until you pick another.
-
 
 ## How it works
 
-ChromeSwitch registers itself as your default browser. macOS hands it every link, and it
-immediately re-opens the link in Google Chrome with `--profile-directory=<your choice>`. Chrome's
-single-instance guard routes that into the running Chrome, so it feels instant. The app has no
-window and no Dock icon; it lives in the menu bar and shows the active profile's picture and name.
+Switchius registers itself as your default browser. macOS hands it every link, and it
+immediately re-opens the link in Google Chrome with `--profile-directory=<your choice>`, then
+brings Chrome to the front. Chrome's single-instance guard routes the link into the running
+Chrome, so it feels instant. The app has no window and no Dock icon; it lives in the menu bar as
+the active profile's picture.
 
-Profiles are read live from Chrome's own profile list (`~/Library/Application Support/Google/Chrome/Local State`),
-so new or renamed profiles show up without any configuration.
+Profiles are read live from Chrome's own profile list
+(`~/Library/Application Support/Google/Chrome/Local State`), so new or renamed profiles show up
+without any configuration.
 
 ## Install
 
@@ -24,18 +25,22 @@ Requirements: macOS 13 or newer, Google Chrome, and the Xcode Command Line Tools
 (`xcode-select --install`). No Xcode needed.
 
 ```bash
-git clone <this repo> && cd chromeswitch
+git clone <this repo> && cd switchius
 make install
 ```
 
-That builds the app, copies it to `/Applications`, and launches it. Then:
+That builds the app, copies it to `/Applications`, and launches it. On first launch macOS asks
+whether to make Switchius your default browser; say yes. (Declined it? The menu has
+**Use Switchius as Default Browser…**.) Then click the profile picture in the menu bar and pick
+the profile links should open in.
 
-1. Click the new menu bar icon and choose **Use ChromeSwitch as Default Browser…**. macOS asks you
-   to confirm.
-2. Pick the profile links should open in.
-3. Optionally turn on **Launch at Login**.
+Try it: click a link in Slack. It opens in the chosen profile, and Chrome comes to the front.
 
-Try it: click a link in Slack. It opens in the chosen profile.
+Menu options:
+
+- **Show Name in Menu Bar** — adds the profile name next to the picture. Handy when two profiles
+  share the same Google picture.
+- **Launch at Login** — so Switchius survives a restart.
 
 ## Uninstall
 
@@ -49,17 +54,17 @@ Afterwards set a browser again in System Settings → Desktop & Dock → Default
 
 ```bash
 make test     # self-contained checks for the core logic
-make app      # build .build/ChromeSwitch.app
+make app      # build .build/Switchius.app
 make install  # build + install + launch
 ```
 
 Layout:
 
-- `Sources/ChromeSwitchCore` — pure logic: reading Chrome's profile list, labelling profiles,
+- `Sources/SwitchiusCore` — pure logic: reading Chrome's profile list, labelling profiles,
   remembering the choice. No AppKit.
-- `Sources/ChromeSwitch` — the menu bar app: status item, URL handling, Chrome launch,
+- `Sources/Switchius` — the menu bar app: status item, URL handling, Chrome launch and focus,
   default-browser and login-item plumbing.
-- `Sources/ChromeSwitchChecks` — the checks `make test` runs. XCTest is not part of the Command
+- `Sources/SwitchiusChecks` — the checks `make test` runs. XCTest is not part of the Command
   Line Tools, so these use a small assertion helper instead.
 - `scripts/make-icon.swift` — draws the app icon.
 

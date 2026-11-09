@@ -2,19 +2,19 @@
 import PackageDescription
 
 let package = Package(
-    name: "ChromeSwitch",
+    name: "Switchius",
     platforms: [.macOS(.v13)],
     targets: [
         // Pure logic: reading Chrome's profile list, labelling, remembering the choice.
-        .target(name: "ChromeSwitchCore"),
+        .target(name: "SwitchiusCore"),
         // The menu bar app. Thin AppKit layer over the core.
         .executableTarget(
-            name: "ChromeSwitch",
-            dependencies: ["ChromeSwitchCore"],
+            name: "Switchius",
+            dependencies: ["SwitchiusCore"],
             linkerSettings: [.linkedFramework("ServiceManagement")]
         ),
         // Self-contained checks for the core (`make test`). No XCTest: it is not part of the
         // Command Line Tools, and we want `make install` to work without Xcode.
-        .executableTarget(name: "ChromeSwitchChecks", dependencies: ["ChromeSwitchCore"]),
+        .executableTarget(name: "SwitchiusChecks", dependencies: ["SwitchiusCore"]),
     ]
 )

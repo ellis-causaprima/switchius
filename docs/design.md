@@ -1,4 +1,6 @@
-# ChromeSwitch design (2026-11-09)
+# Switchius design (2026-11-09)
+
+Earlier working names: ChromeSwitch, Janus.
 
 ## Problem
 
@@ -18,7 +20,8 @@ menu. Nothing else: no URL rules, no other browsers, no automatic switching.
 | `ChromeProfileStore` (core) | Parse `Local State` → `[ChromeProfile]`, in Chrome's order; locate cached avatar files | Foundation |
 | `ProfileLabels` (core) | Unique menu titles (duplicates get account name / email / directory), truncated bar title | — |
 | `ActiveProfileStore` (core) | Remember the chosen directory in UserDefaults; fall back to the first profile if it disappeared | Foundation |
-| `ChromeLauncher` (app) | `NSWorkspace.openApplication` on Chrome with `createsNewApplicationInstance` and the profile flag + URLs | AppKit |
+| `ChromeLauncher` (app) | `NSWorkspace.openApplication` on Chrome with `createsNewApplicationInstance` and the profile flag + URLs; afterwards hands activation to the running Chrome | AppKit |
+| `Preferences` (app) | Two UserDefaults switches: show name in menu bar, default-browser offer already made | Foundation |
 | `DefaultBrowser` (app) | Detect / request default-handler status for http and https | AppKit |
 | `LoginItem` (app) | `SMAppService` register / unregister | ServiceManagement |
 | `Avatars` (app) | Round profile pictures, SF Symbol fallback | AppKit, core |
@@ -30,6 +33,13 @@ menu. Nothing else: no URL rules, no other browsers, no automatic switching.
 2. Re-read profiles (cheap, keeps the saved choice honest), resolve the active one.
 3. Launch Chrome with `--profile-directory=<dir> <urls…>` as a new instance. Chrome's process
    singleton forwards to the running copy and the helper exits.
+4. If Chrome was already running, yield our activation to it (`NSApp.yieldActivation(to:)` +
+   `activate(from:)` on macOS 14+). macOS activated us to handle the link, so the hand-off is
+   allowed; without it the tab opens behind the app the link was clicked in.
+
+On first launch from a bundle the app asks macOS to become the default browser once
+(`didOfferDefaultBrowser`). The menu bar shows the active profile's picture only; the name is an
+opt-in toggle because it crowds the bar.
 
 ## Error handling
 
@@ -42,7 +52,7 @@ menu. Nothing else: no URL rules, no other browsers, no automatic switching.
 ## Testing
 
 Core logic has self-contained checks (`make test`). The AppKit layer is verified by hand: install,
-`open -a ChromeSwitch https://example.com`, watch the unified log for the forwarding line, check
+`open -a Switchius https://example.com`, watch the unified log for the forwarding line, check
 the tab appears in the chosen profile.
 
 ## Packaging

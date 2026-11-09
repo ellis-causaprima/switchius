@@ -1,4 +1,4 @@
-import ChromeSwitchCore
+import SwitchiusCore
 
 func runProfileLabelsChecks() {
     do {

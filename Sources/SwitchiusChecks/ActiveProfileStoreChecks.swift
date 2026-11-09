@@ -1,11 +1,11 @@
 import Foundation
-import ChromeSwitchCore
+import SwitchiusCore
 
 func runActiveProfileStoreChecks() {
     let profiles = [ChromeProfile(directory: "Default", name: "A"), ChromeProfile(directory: "Profile 2", name: "B")]
 
     func withDefaults(_ body: (UserDefaults) -> Void) {
-        let suite = "ChromeSwitchChecks.\(UUID().uuidString)"
+        let suite = "SwitchiusChecks.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
         body(defaults)
         defaults.removePersistentDomain(forName: suite)

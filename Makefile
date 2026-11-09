@@ -1,7 +1,7 @@
-# ChromeSwitch — build, bundle, and install without Xcode (Command Line Tools are enough).
+# Switchius — build, bundle, and install without Xcode (Command Line Tools are enough).
 
-APP_NAME    := ChromeSwitch
-BUNDLE_ID   := com.bareuther.chromeswitch
+APP_NAME    := Switchius
+BUNDLE_ID   := com.bareuther.switchius
 VERSION     := 0.1.0
 BUILD_DIR   := .build
 APP_DIR     := $(BUILD_DIR)/$(APP_NAME).app
@@ -16,7 +16,7 @@ build:
 	swift build -c release
 
 test:
-	swift run -c release ChromeSwitchChecks
+	swift run -c release SwitchiusChecks
 
 icon: $(BUILD_DIR)/AppIcon.icns
 
@@ -43,7 +43,7 @@ install: app
 	ditto $(APP_DIR) "$(INSTALL_DIR)/$(APP_NAME).app"
 	$(LSREGISTER) -f "$(INSTALL_DIR)/$(APP_NAME).app"
 	open "$(INSTALL_DIR)/$(APP_NAME).app"
-	@echo "Installed to $(INSTALL_DIR)/$(APP_NAME).app — now pick 'Use ChromeSwitch as Default Browser…' from its menu bar icon."
+	@echo "Installed to $(INSTALL_DIR)/$(APP_NAME).app — now pick 'Use Switchius as Default Browser…' from its menu bar icon."
 
 uninstall:
 	-pkill -x $(APP_NAME)

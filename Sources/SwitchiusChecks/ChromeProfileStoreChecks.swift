@@ -1,5 +1,5 @@
 import Foundation
-import ChromeSwitchCore
+import SwitchiusCore
 
 private func localState(_ infoCache: String, extra: String = "") -> Data {
     """

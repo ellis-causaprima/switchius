@@ -1,5 +1,5 @@
 import AppKit
-import ChromeSwitchCore
+import SwitchiusCore
 
 /// Round profile pictures for the menu and the menu bar, with an SF Symbol fallback.
 enum Avatars {
