@@ -21,20 +21,30 @@ without any configuration.
 
 ## Install
 
-Requirements: macOS 13 or newer, Google Chrome, and the Xcode Command Line Tools
-(`xcode-select --install`). No Xcode needed.
+Paste this into Terminal:
 
 ```bash
-git clone <this repo> && cd switchius
-make install
+curl -fsSL https://raw.githubusercontent.com/ellis-causaprima/switchius/main/bootstrap.sh | bash
 ```
 
-That builds the app, copies it to `/Applications`, and launches it. On first launch macOS asks
-whether to make Switchius your default browser; say yes. (Declined it? The menu has
-**Use Switchius as Default Browser…**.) Then click the profile picture in the menu bar and pick
-the profile links should open in.
+It checks your Mac, downloads the newest release, builds it on your machine, puts
+`Switchius.app` in `/Applications` (or `~/Applications` on a non-admin account) and starts it.
+Building locally is why there is no "unidentified developer" warning and no Apple account involved.
+
+Then two clicks:
+
+1. macOS asks whether to make Switchius your default browser. Choose **Use Switchius**.
+   (Missed it? The menu has **Use Switchius as Default Browser…**.)
+2. Click the profile picture in the menu bar and pick the profile links should open in.
 
 Try it: click a link in Slack. It opens in the chosen profile, and Chrome comes to the front.
+
+To update, paste the same line again.
+
+Requirements: macOS 13 or newer, Google Chrome, and Apple's Command Line Tools. If those are
+missing, the script stops and tells you to run `xcode-select --install` first (no Xcode needed).
+
+**From a checkout instead:** `git clone https://github.com/ellis-causaprima/switchius && cd switchius && make install`.
 
 Menu options:
 
@@ -45,8 +55,11 @@ Menu options:
 ## Uninstall
 
 ```bash
-make uninstall
+make -C ~/.local/share/switchius uninstall
 ```
+
+(From your own checkout: `make uninstall`. Installed into `~/Applications`? Add
+`INSTALL_DIR=~/Applications`.)
 
 Afterwards set a browser again in System Settings → Desktop & Dock → Default web browser.
 
@@ -58,6 +71,9 @@ make app      # build .build/Switchius.app
 make install  # build + install + launch
 ```
 
+`bootstrap.sh` is the one-line installer: it clones into `~/.local/share/switchius` and runs
+`make install`. Its header lists the `SWITCHIUS_*` overrides (fork, version, folders, no launch).
+
 Layout:
 
 - `Sources/SwitchiusCore` — pure logic: reading Chrome's profile list, labelling profiles,
@@ -68,7 +84,8 @@ Layout:
   Line Tools, so these use a small assertion helper instead.
 - `scripts/make-icon.swift` — draws the app icon.
 
-The app is ad-hoc signed. Because you build it yourself, Gatekeeper is happy with that.
+The app is ad-hoc signed. Because it is built on the machine that runs it (a `git clone` is never
+quarantined), Gatekeeper is happy with that.
 
 ## FAQ
 

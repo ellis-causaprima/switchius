@@ -1,11 +1,15 @@
 # Switchius — build, bundle, and install without Xcode (Command Line Tools are enough).
 
 APP_NAME    := Switchius
-BUNDLE_ID   := com.bareuther.switchius
+BUNDLE_ID   := io.github.ellis-causaprima.switchius
 VERSION     := 0.1.0
 BUILD_DIR   := .build
 APP_DIR     := $(BUILD_DIR)/$(APP_NAME).app
 INSTALL_DIR ?= /Applications
+# LAUNCH=0 installs without quitting, registering or starting the app (headless installs, tests).
+LAUNCH      ?= 1
+# NOTES=0 drops the closing hint; bootstrap.sh prints its own.
+NOTES       ?= 1
 LSREGISTER  := /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 
 .PHONY: all build test app icon install uninstall clean
@@ -38,12 +42,19 @@ app: build icon
 	@echo "Built $(APP_DIR)"
 
 install: app
+ifeq ($(LAUNCH),1)
 	-pkill -x $(APP_NAME)
+endif
+	mkdir -p "$(INSTALL_DIR)"
 	rm -rf "$(INSTALL_DIR)/$(APP_NAME).app"
 	ditto $(APP_DIR) "$(INSTALL_DIR)/$(APP_NAME).app"
+ifeq ($(LAUNCH),1)
 	$(LSREGISTER) -f "$(INSTALL_DIR)/$(APP_NAME).app"
 	open "$(INSTALL_DIR)/$(APP_NAME).app"
+endif
+ifeq ($(NOTES),1)
 	@echo "Installed to $(INSTALL_DIR)/$(APP_NAME).app — now pick 'Use Switchius as Default Browser…' from its menu bar icon."
+endif
 
 uninstall:
 	-pkill -x $(APP_NAME)
